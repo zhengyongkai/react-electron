@@ -2,7 +2,10 @@ name: CI - Test, Build and Package
 
 on:
   push:
+    branches: [ main, ci/add-ci-build-release ]
+  pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   test:
