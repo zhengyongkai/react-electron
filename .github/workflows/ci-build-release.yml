@@ -17,39 +17,8 @@ jobs:
           node-version: '18'
           cache: 'pnpm'
 
-      - name: Setup pnpm (Linux/macOS)
-        if: runner.os != 'Windows'
-        run: |
-          set -eux
-          echo "PATH=$PATH"
-          if command -v corepack >/dev/null 2>&1; then
-            corepack enable || true
-            corepack prepare pnpm@latest --activate || echo "corepack prepare failed"
-          else
-            echo "corepack not found"
-          fi
-          if ! command -v pnpm >/dev/null 2>&1; then
-            echo "pnpm not found, installing via npm"
-            npm install -g pnpm
-          fi
-          echo "pnpm version: $(pnpm -v)"
-
-      - name: Setup pnpm (Windows)
-        if: runner.os == 'Windows'
-        shell: powershell
-        run: |
-          Write-Host "PATH=$env:PATH"
-          if (Get-Command corepack -ErrorAction SilentlyContinue) {
-            corepack enable -Force -ErrorAction SilentlyContinue
-            corepack prepare pnpm@latest --activate -ErrorAction SilentlyContinue
-          } else {
-            Write-Host "corepack not found"
-          }
-          if (-not (Get-Command pnpm -ErrorAction SilentlyContinue)) {
-            Write-Host "pnpm not found, installing via npm"
-            npm install -g pnpm
-          }
-          pnpm -v
+      - name: Setup pnpm
+        run: npm i -g pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -76,39 +45,8 @@ jobs:
           node-version: '18'
           cache: 'pnpm'
 
-      - name: Setup pnpm (Linux/macOS)
-        if: runner.os != 'Windows'
-        run: |
-          set -eux
-          echo "PATH=$PATH"
-          if command -v corepack >/dev/null 2>&1; then
-            corepack enable || true
-            corepack prepare pnpm@latest --activate || echo "corepack prepare failed"
-          else
-            echo "corepack not found"
-          fi
-          if ! command -v pnpm >/dev/null 2>&1; then
-            echo "pnpm not found, installing via npm"
-            npm install -g pnpm
-          fi
-          echo "pnpm version: $(pnpm -v)"
-
-      - name: Setup pnpm (Windows)
-        if: runner.os == 'Windows'
-        shell: powershell
-        run: |
-          Write-Host "PATH=$env:PATH"
-          if (Get-Command corepack -ErrorAction SilentlyContinue) {
-            corepack enable -Force -ErrorAction SilentlyContinue
-            corepack prepare pnpm@latest --activate -ErrorAction SilentlyContinue
-          } else {
-            Write-Host "corepack not found"
-          }
-          if (-not (Get-Command pnpm -ErrorAction SilentlyContinue)) {
-            Write-Host "pnpm not found, installing via npm"
-            npm install -g pnpm
-          }
-          pnpm -v
+      - name: Setup pnpm
+        run: npm i -g pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -116,19 +54,15 @@ jobs:
       - name: Build web/renderer and main
         run: pnpm build
 
-      - name: Package for Windows
-        if: matrix.os == 'windows-latest'
-        run: pnpm run build:win
-        shell: powershell
-
-      - name: Package for macOS
-        if: matrix.os == 'macos-latest'
-        run: pnpm run build:mac
-        shell: bash
-
-      - name: Package for Linux
-        if: matrix.os == 'ubuntu-latest'
-        run: pnpm run build:linux
+      - name: Package for target platform
+        run: |
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            pnpm run build:win;
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            pnpm run build:mac;
+          else
+            pnpm run build:linux;
+          fi
         shell: bash
 
       - name: Upload installers
