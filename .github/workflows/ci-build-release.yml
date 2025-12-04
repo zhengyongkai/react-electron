@@ -17,8 +17,22 @@ jobs:
           node-version: '18'
           cache: 'pnpm'
 
-      - name: Setup pnpm
-        run: npm i -g pnpm
+      - name: Setup pnpm (ensure pnpm available)
+        run: |
+          set -eux
+          # Enable corepack (ships with Node 16.10+)
+          if command -v corepack >/dev/null 2>&1; then
+            corepack enable || true
+            corepack prepare pnpm@latest --activate || echo "corepack prepare failed"
+          else
+            echo "corepack not available"
+          fi
+          # Fallback to npm global install if pnpm still missing
+          if ! command -v pnpm >/dev/null 2>&1; then
+            echo "pnpm not found, installing via npm"
+            npm install -g pnpm
+          fi
+          pnpm -v
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -45,8 +59,20 @@ jobs:
           node-version: '18'
           cache: 'pnpm'
 
-      - name: Setup pnpm
-        run: npm i -g pnpm
+      - name: Setup pnpm (ensure pnpm available)
+        run: |
+          set -eux
+          if command -v corepack >/dev/null 2>&1; then
+            corepack enable || true
+            corepack prepare pnpm@latest --activate || echo "corepack prepare failed"
+          else
+            echo "corepack not available"
+          fi
+          if ! command -v pnpm >/dev/null 2>&1; then
+            echo "pnpm not found, installing via npm"
+            npm install -g pnpm
+          fi
+          pnpm -v
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
