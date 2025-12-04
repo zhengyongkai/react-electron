@@ -1,0 +1,84 @@
+name: CI - Test, Build and Package
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        run: npm i -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Run tests
+        run: pnpm test --if-present
+
+  build:
+    name: Build installers
+    needs: test
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        run: npm i -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web/renderer and main
+        run: pnpm build
+
+      - name: Package for target platform
+        run: |
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            pnpm run build:win;
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            pnpm run build:mac;
+          else
+            pnpm run build:linux;
+          fi
+        shell: bash
+
+      - name: Upload installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-artifacts-${{ matrix.os }}
+          path: |
+            dist/**
+            build/**
+            release/**
+            out/**
+
+  notify:
+    name: Completed
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify
+        run: echo "Build and packaging finished. Download artifacts from the workflow run in Actions."
