@@ -1,5 +1,5 @@
 function App(): React.JSX.Element {
-  return <></>;
+  return <>你好</>;
 }
 
 export default App;
