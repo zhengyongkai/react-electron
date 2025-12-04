@@ -17,10 +17,8 @@ jobs:
           node-version: '18'
           cache: 'pnpm'
 
-      - name: Enable Corepack and prepare pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@latest --activate
+      - name: Setup pnpm
+        run: npm i -g pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -47,10 +45,8 @@ jobs:
           node-version: '18'
           cache: 'pnpm'
 
-      - name: Enable Corepack and prepare pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@latest --activate
+      - name: Setup pnpm
+        run: npm i -g pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -58,19 +54,15 @@ jobs:
       - name: Build web/renderer and main
         run: pnpm build
 
-      - name: Package for Windows
-        if: matrix.os == 'windows-latest'
-        run: pnpm run build:win
-        shell: powershell
-
-      - name: Package for macOS
-        if: matrix.os == 'macos-latest'
-        run: pnpm run build:mac
-        shell: bash
-
-      - name: Package for Linux
-        if: matrix.os == 'ubuntu-latest'
-        run: pnpm run build:linux
+      - name: Package for target platform
+        run: |
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            pnpm run build:win;
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            pnpm run build:mac;
+          else
+            pnpm run build:linux;
+          fi
         shell: bash
 
       - name: Upload installers
