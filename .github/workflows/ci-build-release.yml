@@ -15,33 +15,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'pnpm'
+          cache: 'npm'
 
-      - name: Setup pnpm (ensure pnpm available)
-        run: |
-          set -eux
-          # Enable corepack (ships with Node 16.10+)
-          if command -v corepack >/dev/null 2>&1; then
-            corepack enable || true
-            corepack prepare pnpm@latest --activate || echo "corepack prepare failed"
-          else
-            echo "corepack not available"
-          fi
-          # Fallback to npm global install if pnpm still missing
-          if ! command -v pnpm >/dev/null 2>&1; then
-            echo "pnpm not found, installing via npm"
-            npm install -g pnpm
-          fi
-          pnpm -v
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Install dependencies (npm)
+        run: npm install
 
       - name: Lint
-        run: pnpm lint
+        run: npm run lint
 
       - name: Run tests
-        run: pnpm test --if-present
+        run: npm run test --if-present
 
   build:
     name: Build installers
@@ -57,37 +40,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'pnpm'
+          cache: 'npm'
 
-      - name: Setup pnpm (ensure pnpm available)
-        run: |
-          set -eux
-          if command -v corepack >/dev/null 2>&1; then
-            corepack enable || true
-            corepack prepare pnpm@latest --activate || echo "corepack prepare failed"
-          else
-            echo "corepack not available"
-          fi
-          if ! command -v pnpm >/dev/null 2>&1; then
-            echo "pnpm not found, installing via npm"
-            npm install -g pnpm
-          fi
-          pnpm -v
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Install dependencies (npm)
+        run: npm install
 
       - name: Build web/renderer and main
-        run: pnpm build
+        run: npm run build
 
       - name: Package for target platform
         run: |
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            pnpm run build:win;
+            npm run build:win;
           elif [ "${{ matrix.os }}" = "macos-latest" ]; then
-            pnpm run build:mac;
+            npm run build:mac;
           else
-            pnpm run build:linux;
+            npm run build:linux;
           fi
         shell: bash
 
