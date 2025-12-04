@@ -24,22 +24,18 @@ jobs:
             core.setOutput('is_pr_merge', prs && prs.length > 0 ? 'true' : 'false');
       - name: Create an issue for direct push
         if: steps.check_pr.outputs.is_pr_merge == 'false'
-        uses: peter-evans/create-issue@v4
+        uses: actions/github-script@v6
         with:
-          title: "Direct push to main detected"
-          labels: "direct-push,security"
-          body: |
-            A direct push to `main` was detected.
-
-            - Repository: ${{ github.repository }}
-            - Pusher: ${{ github.actor }}
-            - Commit: ${{ github.sha }}
-            - Compare URL: ${{ github.event.compare }}
-
-            Commits in this push:
-            ${{ toJSON(github.event.commits) }}
-
-            Please review the branch protection rules and revert the changes if they should not be on `main`.
+          script: |
+            const title = "Direct push to main detected";
+            const body = `A direct push to \\`main\\` was detected.\\n\\n- Repository: ${{ github.repository }}\\n- Pusher: ${{ github.actor }}\\n- Commit: ${{ github.sha }}\\n- Compare URL: ${{ github.event.compare }}\\n\\nCommits in this push:\\n${JSON.stringify(${{ github.event.commits }}, null, 2)}\\n\\nPlease review the branch protection rules and revert the changes if they should not be on \\`main\\`.`;
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['direct-push', 'security']
+            });
 
       - name: Log that this push looks like a PR merge (no action)
         if: steps.check_pr.outputs.is_pr_merge == 'true'
