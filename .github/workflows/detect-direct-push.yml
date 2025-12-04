@@ -28,7 +28,7 @@ jobs:
         with:
           script: |
             const title = "Direct push to main detected";
-            const body = `A direct push to \\`main\\` was detected.\\n\\n- Repository: ${{ github.repository }}\\n- Pusher: ${{ github.actor }}\\n- Commit: ${{ github.sha }}\\n- Compare URL: ${{ github.event.compare }}\\n\\nCommits in this push:\\n${JSON.stringify(${{ github.event.commits }}, null, 2)}\\n\\nPlease review the branch protection rules and revert the changes if they should not be on \\`main\\`.`;
+            const body = `A direct push to \`main\` was detected.\n\n- Repository: ${context.repo.owner}/${context.repo.repo}\n- Pusher: ${process.env.GITHUB_ACTOR}\n- Commit: ${process.env.GITHUB_SHA}\n\nPlease review the branch protection rules and revert the changes if they should not be on \`main\`.`;
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
