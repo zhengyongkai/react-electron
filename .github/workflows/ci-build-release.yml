@@ -2,10 +2,7 @@ name: CI - Test, Build and Package
 
 on:
   push:
-    branches: [ main, ci/add-ci-build-release ]
-  pull_request:
     branches: [ main ]
-  workflow_dispatch:
 
 jobs:
   test:
@@ -32,12 +29,6 @@ jobs:
           key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-
-      
-        - name: Configure pnpm mirror
-          run: |
-            pnpm config set registry https://registry.npmmirror.com
-            pnpm config set fetch-retry-maxtimeout 60000
-            pnpm config set fetch-retry-mintimeout 20000
 
       - name: Install dependencies (pnpm)
         run: pnpm install --frozen-lockfile
@@ -76,12 +67,6 @@ jobs:
           key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-
-
-        - name: Configure pnpm mirror
-          run: |
-            pnpm config set registry https://registry.npmmirror.com
-            pnpm config set fetch-retry-maxtimeout 60000
-            pnpm config set fetch-retry-mintimeout 20000
 
       - name: Install dependencies (pnpm)
         run: pnpm install --frozen-lockfile
