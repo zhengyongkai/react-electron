@@ -7,6 +7,18 @@ function App(): React.JSX.Element {
   const dispatch = useAppDispatch();
   const { message, status, error } = useAppSelector((state) => state.app);
 
+  // async function showSystemDialog(win: BrowserWindow) {
+  //   const { response } = await dialog.showMessageBox(win, {
+  //     type: 'info',
+  //     buttons: ['确定', '取消'],
+  //     defaultId: 0,
+  //     title: '提示',
+  //     message: '是否执行某操作？',
+  //     detail: '这里可以补充说明',
+  //   });
+  //   console.log('用户选择：', response); // 0=确定,1=取消
+  // }
+
   useEffect(() => {
     if (status === 'idle') {
       dispatch(fetchGreeting());
@@ -21,7 +33,12 @@ function App(): React.JSX.Element {
       <div style={{ display: 'flex', gap: 12 }}>
         <button
           type='button'
-          onClick={() => dispatch(fetchGreeting())}
+          onClick={() => {
+            window.electron.ipcRenderer.invoke('notify', {
+              title: '提示',
+              body: '任务已完成！',
+            });
+          }}
           disabled={status === 'loading'}
         >
           重新请求

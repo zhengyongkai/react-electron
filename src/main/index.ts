@@ -3,8 +3,11 @@ import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { join } from 'path';
 
 import icon from '../../resources/icon.png?asset';
+import { registerNotificationIpc } from '../ipc/notification';
+import { setupNotification } from '../services/notification';
+import { destroyTray, setupTray } from '../services/tray';
 
-function createWindow(): void {
+function createWindow(): BrowserWindow {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 900,
@@ -36,12 +39,16 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
+
+  return mainWindow;
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  setupNotification();
+  registerNotificationIpc();
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron');
 
@@ -55,12 +62,16 @@ app.whenReady().then(() => {
   // IPC test
   ipcMain.on('ping', () => console.log('pong'));
 
-  createWindow();
+  const mainWindow = createWindow();
+  setupTray(mainWindow);
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (BrowserWindow.getAllWindows().length === 0) {
+      const window = createWindow();
+      setupTray(window);
+    }
   });
 });
 
@@ -71,6 +82,10 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+app.on('before-quit', () => {
+  destroyTray();
 });
 
 // In this file you can include the rest of your app's specific main process
