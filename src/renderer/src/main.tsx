@@ -8,6 +8,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import App from './App';
 import { persistor, store } from './store';
 
+import 'antd/dist/reset.css';
 import 'uno.css';
 import './assets/main.css';
 
